@@ -1,0 +1,1 @@
+Congratulations, you have deployed your ingress-validate chart

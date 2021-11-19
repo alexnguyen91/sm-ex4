@@ -1,0 +1,28 @@
+{{- $fullName := include "ingress-validate.fullname" . -}}
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: {{ $fullName }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app: {{ template "ingress-validate.name" . }}
+    chart: {{ template "ingress-validate.chart" . }}
+    release: {{ .Release.Name }}
+{{- with .Values.ingressAnnotations }}
+  annotations:
+{{ toYaml . | indent 4}}
+{{- end }}
+spec:
+  rules:
+  {{- range .Values.hosts }}
+    - host: {{ .name }}.{{ $.Values.domain }}
+      http:
+        paths:
+          - path: /
+            pathType: ImplementationSpecific
+            backend:
+              service:
+                name: {{ $fullName }}
+                port:
+                  name: http
+  {{- end }}

@@ -1,0 +1,43 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ template "ingress-validate.fullname" . }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app: {{ template "ingress-validate.name" . }}
+    chart: {{ template "ingress-validate.chart" . }}
+    release: {{ .Release.Name }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: {{ template "ingress-validate.name" . }}
+      chart: {{ template "ingress-validate.chart" . }}
+      release: {{ .Release.Name }}
+  template:
+    metadata:
+      labels:
+        app: {{ template "ingress-validate.name" . }}
+        chart: {{ template "ingress-validate.chart" . }}
+        release: {{ .Release.Name }}
+    spec:
+      containers:
+      - name: "{{ .Chart.Name }}"
+        image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+        imagePullPolicy: {{ .Values.image.pullPolicy }}
+        ports:
+        - containerPort: 80
+          name: http
+        readinessProbe:
+          httpGet:
+            path: /
+            port: 80
+          initialDelaySeconds: 3
+          periodSeconds: 5
+        volumeMounts:
+        - name: config
+          mountPath: /etc/nginx/conf.d
+      volumes:
+      - name: config
+        configMap:
+          name: {{ template "ingress-validate.fullname" . }}
